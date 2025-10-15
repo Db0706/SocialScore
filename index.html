@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.A.C - Social Alignment Chart</title>
+
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="S.A.C - Social Alignment Chart">
+    <meta name="description" content="On Wednesdays we plot. Chart personalities from Cunt to Pristine and food preferences from Dietary Restrictions to Epicurean. Where do you fall?">
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/">
+    <meta property="og:title" content="S.A.C - Social Alignment Chart">
+    <meta property="og:description" content="On Wednesdays we plot. Chart personalities from Cunt to Pristine and food preferences from Dietary Restrictions to Epicurean. Where do you fall?">
+    <meta property="og:image" content="https://yourdomain.com/preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yourdomain.com/">
+    <meta property="twitter:title" content="S.A.C - Social Alignment Chart">
+    <meta property="twitter:description" content="On Wednesdays we plot. Chart personalities from Cunt to Pristine and food preferences from Dietary Restrictions to Epicurean. Where do you fall?">
+    <meta property="twitter:image" content="https://yourdomain.com/preview.png">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>S.A.C</h1>
+            <p class="subtitle">On Wednesdays we plot</p>
+        </header>
+
+        <div class="input-section" style="position: relative;">
+            <!-- Login overlay -->
+            <div id="loginOverlay" class="login-overlay">
+                <div class="login-overlay-content">
+                    <h2>🔒 Login Required</h2>
+                    <p>You must be logged in to update the chart</p>
+                    <button id="loginButton" class="login-overlay-button">Login to Update</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="twitterHandle" placeholder="Enter Twitter/X handle (e.g., @username)" />
+                <input type="file" id="profilePic" accept="image/*" />
+                <input type="number" id="foodScore" placeholder="Food Score (-50 to 50)" min="-50" max="50" />
+                <input type="number" id="character" placeholder="Character (-50 to 50)" min="-50" max="50" />
+                <button id="addPerson">Add to Chart</button>
+            </div>
+            <p class="hint">X-Axis: Dietary Restrictions (-50) ← → Epicurean (50)<br>
+            Y-Axis: Cunt (-50) ← → Pristine (50)</p>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="burnChart"></canvas>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-label">Social Score Range:</span>
+                <span class="legend-value">-100 (Yikes) to 100 (Fetch!)</span>
+            </div>
+        </div>
+
+        <div id="personList" class="person-list"></div>
+    </div>
+
+    <!-- Firebase SDK - Using compat version for simpler setup -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        console.log('🔥 Starting Firebase initialization...');
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYLMbbHkFytUO6Gd1_SVJ6-aX9ypIjkz0",
+            authDomain: "socialac-9850d.firebaseapp.com",
+            projectId: "socialac-9850d",
+            storageBucket: "socialac-9850d.firebasestorage.app",
+            messagingSenderId: "637337695197",
+            appId: "1:637337695197:web:51507d170ba0786d63bc34",
+            measurementId: "G-VRBEZBRDJ6"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        console.log('✅ Firebase initialized successfully!');
+        console.log('📊 Firestore instance:', db);
+
+        // Make available globally
+        window.db = db;
+        window.firebaseReady = true;
+
+        // Dispatch ready event
+        window.dispatchEvent(new Event('firebaseReady'));
+        console.log('🎉 Firebase ready event dispatched');
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
