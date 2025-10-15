@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear SAC Storage</title>
+</head>
+<body>
+    <h1>Clear SAC Storage</h1>
+    <button onclick="clearStorage()">Clear All Data</button>
+    <p id="message"></p>
+    
+    <script>
+        function clearStorage() {
+            localStorage.removeItem('sacPeople');
+            document.getElementById('message').textContent = 'Storage cleared! You can close this page and refresh the SAC page.';
+            document.getElementById('message').style.color = 'green';
+        }
+    </script>
+</body>
+</html>
