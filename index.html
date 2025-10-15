@@ -69,6 +69,39 @@
         <div id="personList" class="person-list"></div>
     </div>
 
+    <!-- Firebase SDK - Using compat version for simpler setup -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        console.log('🔥 Starting Firebase initialization...');
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYLMbbHkFytUO6Gd1_SVJ6-aX9ypIjkz0",
+            authDomain: "socialac-9850d.firebaseapp.com",
+            projectId: "socialac-9850d",
+            storageBucket: "socialac-9850d.firebasestorage.app",
+            messagingSenderId: "637337695197",
+            appId: "1:637337695197:web:51507d170ba0786d63bc34",
+            measurementId: "G-VRBEZBRDJ6"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        console.log('✅ Firebase initialized successfully!');
+        console.log('📊 Firestore instance:', db);
+
+        // Make available globally
+        window.db = db;
+        window.firebaseReady = true;
+
+        // Dispatch ready event
+        window.dispatchEvent(new Event('firebaseReady'));
+        console.log('🎉 Firebase ready event dispatched');
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>

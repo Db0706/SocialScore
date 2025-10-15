@@ -2,23 +2,39 @@
 let people = [];
 let chart = null;
 
-// Load people from localStorage on startup
+// Load people from Firestore on startup
 async function loadPeople() {
-    const saved = localStorage.getItem('sacPeople');
-    if (saved) {
-        const parsed = JSON.parse(saved);
-        // Reload images for each person
-        for (const person of parsed) {
+    try {
+        // Wait for Firebase to be ready
+        if (!window.firebaseReady) {
+            console.log('⏳ Waiting for Firebase to initialize...');
+            await new Promise(resolve => {
+                window.addEventListener('firebaseReady', resolve, { once: true });
+            });
+        }
+
+        console.log('📥 Loading people from Firestore...');
+        const querySnapshot = await window.db.collection('people').get();
+
+        // Clear existing people array
+        people = [];
+
+        for (const docSnap of querySnapshot.docs) {
+            const data = docSnap.data();
+
             // Load image from stored data URL if available
-            if (person.imageDataUrl) {
+            if (data.imageDataUrl) {
                 const img = new Image();
-                img.src = person.imageDataUrl;
-                person.image = img;
+                img.src = data.imageDataUrl;
+                data.image = img;
             } else {
-                const image = await fetchTwitterPFP(person.handle);
-                person.image = image;
+                const image = await fetchTwitterPFP(data.handle);
+                data.image = image;
             }
-            people.push(person);
+
+            // Store the document ID for potential deletion
+            data.id = docSnap.id;
+            people.push(data);
         }
 
         // Redraw chart after all people are loaded
@@ -28,20 +44,43 @@ async function loadPeople() {
             drawChart(ctx, canvas.width, canvas.height);
             updatePersonList();
         }
+
+        console.log(`✅ Loaded ${people.length} people from Firestore`);
+    } catch (error) {
+        console.error('❌ Error loading people from Firestore:', error);
     }
 }
 
-// Save people to localStorage
-function savePeople() {
-    // Create a copy without the image objects but with imageDataUrl
-    const toSave = people.map(p => ({
-        handle: p.handle,
-        foodScore: p.foodScore,
-        character: p.character,
-        socialScore: p.socialScore,
-        imageDataUrl: p.imageDataUrl
-    }));
-    localStorage.setItem('sacPeople', JSON.stringify(toSave));
+// Save person to Firestore
+async function savePerson(person) {
+    try {
+        // Wait for Firebase if not ready
+        if (!window.firebaseReady) {
+            console.log('⏳ Waiting for Firebase before saving...');
+            await new Promise(resolve => {
+                window.addEventListener('firebaseReady', resolve, { once: true });
+            });
+        }
+
+        // Create a copy without the image object but with imageDataUrl
+        const toSave = {
+            handle: person.handle,
+            foodScore: person.foodScore,
+            character: person.character,
+            socialScore: person.socialScore,
+            imageDataUrl: person.imageDataUrl,
+            timestamp: new Date().toISOString()
+        };
+
+        console.log('💾 Saving person to Firestore:', toSave);
+        const docRef = await window.db.collection('people').add(toSave);
+        console.log('✅ Person saved to Firestore with ID:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Error saving person to Firestore:', error);
+        console.error('Error details:', error.message);
+        throw error;
+    }
 }
 
 // Color palette - Bubbly and bold
@@ -439,8 +478,18 @@ async function addPerson() {
     // Add to people array
     people.push(person);
 
-    // Save to localStorage
-    savePeople();
+    // Save to Firestore
+    try {
+        const docId = await savePerson(person);
+        person.id = docId; // Store the Firestore document ID
+        console.log('Person added successfully:', person.handle);
+    } catch (error) {
+        console.error('Failed to save person:', error);
+        alert('Failed to save person to database. Please try again.');
+        // Remove from local array if save failed
+        people.pop();
+        return;
+    }
 
     // Redraw chart
     const canvas = document.getElementById('burnChart');
