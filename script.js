@@ -166,30 +166,40 @@ function drawChart(ctx, width, height) {
     ctx.lineTo(padding + chartWidth / 2, padding + chartHeight);
     ctx.stroke();
 
-    // Draw labels with smaller fonts
-    ctx.fillStyle = colors.tertiary;
+    // Draw labels at the end of each pink axis line
+    ctx.fillStyle = colors.primary; // Use pink color to match the axis
     const labelFontSize = isMobile ? 9 : 11;
     ctx.font = `bold ${labelFontSize}px Georgia`;
+
+    // X-axis labels - stacked vertically letter by letter
+    const letterSpacing = isMobile ? 10 : 12;
+    const xLabelOffset = isMobile ? 15 : 20;
+
+    // Left end of X-axis: "Dietary Restrictions" (stacked vertically)
     ctx.textAlign = 'center';
+    const leftLabel = 'Dietary Restrictions';
+    const leftStartY = padding + chartHeight / 2 - (leftLabel.length * letterSpacing) / 2;
+    for (let i = 0; i < leftLabel.length; i++) {
+        ctx.fillText(leftLabel[i], padding - xLabelOffset, leftStartY + i * letterSpacing);
+    }
 
-    // X-axis labels
-    const xLabelY = isMobile ? height - 15 : height - 25;
-    ctx.fillText('Dietary Restrictions', padding + chartWidth * 0.15, xLabelY);
-    ctx.fillText('Epicurean', padding + chartWidth * 0.85, xLabelY);
+    // Right end of X-axis: "Epicurean" (stacked vertically)
+    const rightLabel = 'Epicurean';
+    const rightStartY = padding + chartHeight / 2 - (rightLabel.length * letterSpacing) / 2;
+    for (let i = 0; i < rightLabel.length; i++) {
+        ctx.fillText(rightLabel[i], padding + chartWidth + xLabelOffset, rightStartY + i * letterSpacing);
+    }
 
-    // Y-axis labels
-    const yLabelOffset = isMobile ? 12 : 20;
-    ctx.save();
-    ctx.translate(yLabelOffset, padding + chartHeight * 0.15);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Pristine', 0, 0);
-    ctx.restore();
+    // Y-axis labels - horizontal landscape, positioned at the ends of the vertical pink line
+    const yLabelOffset = isMobile ? 8 : 10;
 
-    ctx.save();
-    ctx.translate(yLabelOffset, padding + chartHeight * 0.85);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Cunt', 0, 0);
-    ctx.restore();
+    // Top end of Y-axis: "Pristine" (horizontal)
+    ctx.textAlign = 'center';
+    ctx.fillText('Pristine', padding + chartWidth / 2, padding - yLabelOffset);
+
+    // Bottom end of Y-axis: "Cunt" (horizontal)
+    ctx.textAlign = 'center';
+    ctx.fillText('Cunt', padding + chartWidth / 2, padding + chartHeight + yLabelOffset + labelFontSize);
 
     // Draw axis numbers with smaller font
     const numberFontSize = isMobile ? 8 : 10;
@@ -279,8 +289,11 @@ function drawPersonOnChart(ctx, person, padding, chartWidth, chartHeight, offset
     const size = isMobile ? 20 : 25;
     const radius = size / 2;
 
-    // Draw profile picture if available
-    if (person.image) {
+    // Check if user is logged in
+    const isLoggedIn = sessionStorage.getItem('authenticated');
+
+    // Draw profile picture if available AND logged in
+    if (person.image && isLoggedIn) {
         const img = person.image;
 
         // Draw circular clipping path
@@ -301,15 +314,18 @@ function drawPersonOnChart(ctx, person, padding, chartWidth, chartHeight, offset
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.stroke();
     } else {
-        // Draw circle placeholder
-        ctx.fillStyle = colors.accent1;
+        // Draw pink circle placeholder (no pfp when not logged in)
+        ctx.fillStyle = colors.primary; // Hot pink
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = getScoreColor(person.socialScore);
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        // Only show colored border if logged in
+        if (isLoggedIn) {
+            ctx.strokeStyle = getScoreColor(person.socialScore);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
     }
 
     // Don't draw handle or score on chart anymore - only show avatar
@@ -382,11 +398,43 @@ async function fetchTwitterPFP(handle) {
 // Check authentication status and show/hide overlay
 function checkAuth() {
     const overlay = document.getElementById('loginOverlay');
-    if (sessionStorage.getItem('authenticated')) {
+    const userProfile = document.getElementById('userProfile');
+    const isAuthenticated = sessionStorage.getItem('authenticated');
+
+    if (isAuthenticated) {
         overlay.classList.add('hidden');
+
+        // Show user profile
+        if (userProfile) {
+            const userName = sessionStorage.getItem('username');
+            const userEmoji = sessionStorage.getItem('userEmoji');
+
+            if (userName && userEmoji) {
+                document.getElementById('userName').textContent = userName;
+                document.getElementById('userEmoji').textContent = userEmoji;
+                userProfile.style.display = 'flex';
+            }
+        }
     } else {
         overlay.classList.remove('hidden');
+        if (userProfile) {
+            userProfile.style.display = 'none';
+        }
     }
+}
+
+// Handle logout
+function handleLogout() {
+    sessionStorage.clear();
+    checkAuth();
+
+    // Redraw chart to hide pfps
+    const canvas = document.getElementById('burnChart');
+    const ctx = canvas.getContext('2d');
+    drawChart(ctx, canvas.width, canvas.height);
+
+    // Update person list to hide scores
+    updatePersonList();
 }
 
 // Handle login button click
@@ -396,6 +444,11 @@ document.addEventListener('DOMContentLoaded', function() {
         loginButton.addEventListener('click', function() {
             window.location.href = 'login.html';
         });
+    }
+
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', handleLogout);
     }
 
     // Check auth on page load
@@ -511,6 +564,9 @@ function updatePersonList() {
     const personList = document.getElementById('personList');
     personList.innerHTML = '';
 
+    // Check if user is logged in
+    const isLoggedIn = sessionStorage.getItem('authenticated');
+
     people.forEach((person, index) => {
         const card = document.createElement('div');
         card.className = 'person-card';
@@ -532,13 +588,16 @@ function updatePersonList() {
         handleDiv.className = 'person-handle';
         handleDiv.textContent = person.handle;
 
-        const scoreDiv = document.createElement('div');
-        scoreDiv.className = 'person-score';
-        const scoreClass = person.socialScore >= 0 ? 'score-positive' : 'score-negative';
-        scoreDiv.innerHTML = `Social Score: <span class="${scoreClass}">${person.socialScore}</span>`;
+        // Only show score if logged in
+        if (isLoggedIn) {
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'person-score';
+            const scoreClass = person.socialScore >= 0 ? 'score-positive' : 'score-negative';
+            scoreDiv.innerHTML = `Score: <span class="${scoreClass}">${person.socialScore}</span>`;
+            info.appendChild(scoreDiv);
+        }
 
         info.appendChild(handleDiv);
-        info.appendChild(scoreDiv);
 
         card.appendChild(pfp);
         card.appendChild(info);
