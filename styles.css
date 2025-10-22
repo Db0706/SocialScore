@@ -29,6 +29,111 @@ header {
     background: #FF1493;
     border-radius: 20px;
     padding: 20px;
+    position: relative;
+}
+
+.view-once-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: white;
+    color: #FF1493;
+    border: 2px solid white;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.view-once-button:hover {
+    background: #FFE5F5;
+    transform: scale(1.05);
+}
+
+.view-once-button.hidden {
+    display: none;
+}
+
+.user-profile {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 2px solid white;
+}
+
+.user-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-buttons-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-emoji {
+    font-size: 1.5em;
+}
+
+.user-name {
+    color: white;
+    font-weight: bold;
+    font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.edit-profile-button {
+    padding: 5px 15px;
+    background: white;
+    color: #FF1493;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.edit-profile-button:hover {
+    background: #FFE5F5;
+    transform: scale(1.05);
+}
+
+.logout-button {
+    padding: 5px 15px;
+    background: white;
+    color: #FF1493;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.logout-button:hover {
+    background: #FFE5F5;
+    transform: scale(1.05);
 }
 
 h1 {
@@ -206,6 +311,22 @@ button:active {
     width: 100%;
     height: auto;
     display: block;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .legend {
@@ -295,6 +416,120 @@ button:active {
     font-weight: bold;
 }
 
+/* Edit score modal */
+.edit-score-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.edit-score-modal-content {
+    background: #FFE5F5;
+    margin: 10% auto;
+    padding: 40px;
+    border: 4px solid #FF1493;
+    border-radius: 30px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 15px 50px rgba(255, 20, 147, 0.6);
+}
+
+.edit-score-modal h2 {
+    color: #FF1493;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 2em;
+}
+
+.edit-score-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.edit-score-form label {
+    color: #FF1493;
+    font-weight: bold;
+    margin-bottom: -10px;
+}
+
+.edit-score-form input {
+    padding: 12px;
+    border: 3px solid #FF1493;
+    border-radius: 15px;
+    font-size: 1em;
+    font-family: inherit;
+    background: white;
+    color: #9B59B6;
+    font-weight: bold;
+}
+
+.edit-score-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.edit-score-buttons button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 15px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.delete-btn {
+    background: #E91E63;
+    color: white;
+}
+
+.cancel-edit-btn {
+    background: #9B59B6;
+    color: white;
+}
+
+.save-edit-btn {
+    background: linear-gradient(135deg, #FF1493, #E91E63);
+    color: white;
+}
+
+.delete-btn:hover, .cancel-edit-btn:hover, .save-edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.person-card {
+    cursor: pointer;
+}
+
+.person-card.clickable:hover {
+    cursor: pointer;
+}
+
+.profile-image-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #FF1493;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4em;
+    background: rgba(255, 20, 147, 0.1);
+}
+
 @media (max-width: 768px) {
     body {
         padding: 5px;
@@ -307,6 +542,47 @@ button:active {
 
     h1 {
         font-size: 2em;
+    }
+
+    .view-once-button {
+        position: static;
+        margin: 10px auto 0;
+        display: block;
+        font-size: 0.75em;
+        padding: 8px 15px;
+    }
+
+    .view-once-button.hidden {
+        display: none;
+    }
+
+    .user-profile {
+        position: static;
+        margin: 15px auto 0;
+        width: fit-content;
+        padding: 8px 12px;
+    }
+
+    .user-info-row {
+        margin-bottom: 5px;
+    }
+
+    .user-name {
+        font-size: 0.75em;
+    }
+
+    .user-emoji {
+        font-size: 1.1em;
+    }
+
+    .edit-profile-button {
+        font-size: 0.65em;
+        padding: 5px 10px;
+    }
+
+    .logout-button {
+        font-size: 0.65em;
+        padding: 5px 10px;
     }
 
     .input-section {

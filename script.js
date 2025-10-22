@@ -130,25 +130,7 @@ function drawChart(ctx, width, height) {
     ctx.fillStyle = colors.accent3;
     ctx.fillRect(padding, padding, chartWidth, chartHeight);
 
-    // Draw grid lines
-    ctx.strokeStyle = colors.accent1;
-    ctx.lineWidth = 1;
-
-    // Vertical grid lines
-    for (let i = 0; i <= 10; i++) {
-        ctx.beginPath();
-        ctx.moveTo(padding + (chartWidth / 10) * i, padding);
-        ctx.lineTo(padding + (chartWidth / 10) * i, padding + chartHeight);
-        ctx.stroke();
-    }
-
-    // Horizontal grid lines
-    for (let i = 0; i <= 10; i++) {
-        ctx.beginPath();
-        ctx.moveTo(padding, padding + (chartHeight / 10) * i);
-        ctx.lineTo(padding + chartWidth, padding + (chartHeight / 10) * i);
-        ctx.stroke();
-    }
+    // Grid lines removed - only axis lines will be drawn below
 
     // Draw axes
     ctx.strokeStyle = colors.primary;
@@ -166,30 +148,40 @@ function drawChart(ctx, width, height) {
     ctx.lineTo(padding + chartWidth / 2, padding + chartHeight);
     ctx.stroke();
 
-    // Draw labels with smaller fonts
-    ctx.fillStyle = colors.tertiary;
+    // Draw labels at the end of each pink axis line
+    ctx.fillStyle = colors.primary; // Use pink color to match the axis
     const labelFontSize = isMobile ? 9 : 11;
     ctx.font = `bold ${labelFontSize}px Georgia`;
+
+    // X-axis labels - stacked vertically letter by letter
+    const letterSpacing = isMobile ? 10 : 12;
+    const xLabelOffset = isMobile ? 15 : 20;
+
+    // Left end of X-axis: "Dietary Restrictions" (stacked vertically)
     ctx.textAlign = 'center';
+    const leftLabel = 'Dietary Restrictions';
+    const leftStartY = padding + chartHeight / 2 - (leftLabel.length * letterSpacing) / 2;
+    for (let i = 0; i < leftLabel.length; i++) {
+        ctx.fillText(leftLabel[i], padding - xLabelOffset, leftStartY + i * letterSpacing);
+    }
 
-    // X-axis labels
-    const xLabelY = isMobile ? height - 15 : height - 25;
-    ctx.fillText('Dietary Restrictions', padding + chartWidth * 0.15, xLabelY);
-    ctx.fillText('Epicurean', padding + chartWidth * 0.85, xLabelY);
+    // Right end of X-axis: "Epicurean" (stacked vertically)
+    const rightLabel = 'Epicurean';
+    const rightStartY = padding + chartHeight / 2 - (rightLabel.length * letterSpacing) / 2;
+    for (let i = 0; i < rightLabel.length; i++) {
+        ctx.fillText(rightLabel[i], padding + chartWidth + xLabelOffset, rightStartY + i * letterSpacing);
+    }
 
-    // Y-axis labels
-    const yLabelOffset = isMobile ? 12 : 20;
-    ctx.save();
-    ctx.translate(yLabelOffset, padding + chartHeight * 0.15);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Pristine', 0, 0);
-    ctx.restore();
+    // Y-axis labels - horizontal landscape, positioned at the ends of the vertical pink line
+    const yLabelOffset = isMobile ? 8 : 10;
 
-    ctx.save();
-    ctx.translate(yLabelOffset, padding + chartHeight * 0.85);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Cunt', 0, 0);
-    ctx.restore();
+    // Top end of Y-axis: "Pristine" (horizontal)
+    ctx.textAlign = 'center';
+    ctx.fillText('Pristine', padding + chartWidth / 2, padding - yLabelOffset);
+
+    // Bottom end of Y-axis: "Cunt" (horizontal)
+    ctx.textAlign = 'center';
+    ctx.fillText('Cunt', padding + chartWidth / 2, padding + chartHeight + yLabelOffset + labelFontSize);
 
     // Draw axis numbers with smaller font
     const numberFontSize = isMobile ? 8 : 10;
@@ -198,16 +190,16 @@ function drawChart(ctx, width, height) {
 
     // X-axis numbers
     const xNumberY = isMobile ? height - 5 : height - 10;
-    ctx.fillText('-50', padding, xNumberY);
-    ctx.fillText('0', padding + chartWidth / 2, xNumberY);
-    ctx.fillText('50', padding + chartWidth, xNumberY);
+    ctx.fillText('0', padding, xNumberY);
+    ctx.fillText('50', padding + chartWidth / 2, xNumberY);
+    ctx.fillText('100', padding + chartWidth, xNumberY);
 
     // Y-axis numbers
     ctx.textAlign = 'right';
     const yNumberOffset = isMobile ? 5 : 8;
-    ctx.fillText('50', padding - yNumberOffset, padding + 5);
-    ctx.fillText('0', padding - yNumberOffset, padding + chartHeight / 2 + 5);
-    ctx.fillText('-50', padding - yNumberOffset, padding + chartHeight + 5);
+    ctx.fillText('100', padding - yNumberOffset, padding + 5);
+    ctx.fillText('50', padding - yNumberOffset, padding + chartHeight / 2 + 5);
+    ctx.fillText('0', padding - yNumberOffset, padding + chartHeight + 5);
 
     // Draw people on chart with collision detection
     console.log('Drawing', people.length, 'people on chart');
@@ -219,9 +211,9 @@ function drawChart(ctx, width, height) {
     people.forEach((person, index) => {
         console.log(`Drawing person ${index}:`, person.handle, 'foodScore:', person.foodScore, 'character:', person.character);
 
-        // Calculate base position
-        let baseX = padding + ((person.foodScore + 50) / 100) * chartWidth;
-        let baseY = padding + ((50 - person.character) / 100) * chartHeight;
+        // Calculate base position (0-100 scale)
+        let baseX = padding + (person.foodScore / 100) * chartWidth;
+        let baseY = padding + ((100 - person.character) / 100) * chartHeight;
 
         let offsetX = 0;
         let offsetY = 0;
@@ -264,9 +256,9 @@ function drawChart(ctx, width, height) {
 
 // Draw person on chart
 function drawPersonOnChart(ctx, person, padding, chartWidth, chartHeight, offsetX = 0, offsetY = 0) {
-    // Convert coordinates (-50 to 50) to canvas coordinates
-    let x = padding + ((person.foodScore + 50) / 100) * chartWidth;
-    let y = padding + ((50 - person.character) / 100) * chartHeight; // Inverted Y
+    // Convert coordinates (0 to 100) to canvas coordinates
+    let x = padding + (person.foodScore / 100) * chartWidth;
+    let y = padding + ((100 - person.character) / 100) * chartHeight; // Inverted Y
 
     // Apply offset to prevent overlapping
     x += offsetX;
@@ -279,8 +271,12 @@ function drawPersonOnChart(ctx, person, padding, chartWidth, chartHeight, offset
     const size = isMobile ? 20 : 25;
     const radius = size / 2;
 
-    // Draw profile picture if available
-    if (person.image) {
+    // Check if user is logged in or in view-only mode
+    const isLoggedIn = sessionStorage.getItem('authenticated');
+    const isViewOnly = sessionStorage.getItem('viewOnly');
+
+    // Draw profile picture if available AND (logged in OR view-only)
+    if (person.image && (isLoggedIn || isViewOnly)) {
         const img = person.image;
 
         // Draw circular clipping path
@@ -301,15 +297,18 @@ function drawPersonOnChart(ctx, person, padding, chartWidth, chartHeight, offset
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.stroke();
     } else {
-        // Draw circle placeholder
-        ctx.fillStyle = colors.accent1;
+        // Draw pink circle placeholder (no pfp when not logged in)
+        ctx.fillStyle = colors.primary; // Hot pink
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = getScoreColor(person.socialScore);
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        // Only show colored border if logged in or view-only
+        if (isLoggedIn || isViewOnly) {
+            ctx.strokeStyle = getScoreColor(person.socialScore);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
     }
 
     // Don't draw handle or score on chart anymore - only show avatar
@@ -326,14 +325,14 @@ function calculateSocialScore(foodScore, character) {
 
     const score = (character * characterWeight) + (foodScore * foodWeight);
 
-    return Math.round(score * 2); // Scale to -100 to 100
+    return Math.round(score); // Already on 0-100 scale
 }
 
 // Get color based on score
 function getScoreColor(score) {
-    if (score > 50) return colors.primary;
-    if (score > 0) return colors.secondary;
-    if (score > -50) return colors.tertiary;
+    if (score > 75) return colors.primary;
+    if (score > 50) return colors.secondary;
+    if (score > 25) return colors.tertiary;
     return '#666';
 }
 
@@ -382,11 +381,125 @@ async function fetchTwitterPFP(handle) {
 // Check authentication status and show/hide overlay
 function checkAuth() {
     const overlay = document.getElementById('loginOverlay');
-    if (sessionStorage.getItem('authenticated')) {
+    const userProfile = document.getElementById('userProfile');
+    const viewOnceButton = document.getElementById('viewOnceButton');
+    const isAuthenticated = sessionStorage.getItem('authenticated');
+    const isViewOnly = sessionStorage.getItem('viewOnly');
+
+    if (isAuthenticated) {
         overlay.classList.add('hidden');
+
+        // Hide View Once button when fully authenticated
+        if (viewOnceButton) {
+            viewOnceButton.classList.add('hidden');
+        }
+
+        // Show user profile
+        if (userProfile) {
+            const userName = sessionStorage.getItem('username');
+            const userEmoji = sessionStorage.getItem('userEmoji');
+
+            if (userName && userEmoji) {
+                document.getElementById('userName').textContent = userName;
+
+                const emojiElement = document.getElementById('userEmoji');
+                // Check if userEmoji is a data URL (image) or emoji
+                if (userEmoji.startsWith('data:')) {
+                    // It's an image
+                    emojiElement.innerHTML = `<img src="${userEmoji}" style="width: 1.5em; height: 1.5em; border-radius: 50%; object-fit: cover;">`;
+                } else {
+                    // It's an emoji
+                    emojiElement.textContent = userEmoji;
+                }
+
+                userProfile.style.display = 'flex';
+            }
+        }
     } else {
         overlay.classList.remove('hidden');
+        if (userProfile) {
+            userProfile.style.display = 'none';
+        }
+
+        // Show View Once button when not authenticated
+        if (viewOnceButton && !isViewOnly) {
+            viewOnceButton.classList.remove('hidden');
+        }
     }
+}
+
+// Handle logout
+function handleLogout() {
+    sessionStorage.clear();
+    checkAuth();
+
+    // Redraw chart to hide pfps
+    const canvas = document.getElementById('burnChart');
+    const ctx = canvas.getContext('2d');
+    drawChart(ctx, canvas.width, canvas.height);
+
+    // Update person list to hide scores
+    updatePersonList();
+}
+
+// View-only mode variables
+const VIEW_ONLY_PASSWORD = 'viewonly123';
+let viewOnlyTimeout = null;
+
+// Handle view-only access
+function handleViewOnce() {
+    const password = prompt('Enter view-only password:');
+
+    if (password === VIEW_ONLY_PASSWORD) {
+        // Set view-only session
+        sessionStorage.setItem('viewOnly', 'true');
+        sessionStorage.setItem('viewOnlyTime', Date.now().toString());
+
+        // Hide the View Once button
+        const viewOnceButton = document.getElementById('viewOnceButton');
+        if (viewOnceButton) {
+            viewOnceButton.classList.add('hidden');
+        }
+
+        // Redraw chart to show pfps
+        const canvas = document.getElementById('burnChart');
+        const ctx = canvas.getContext('2d');
+        drawChart(ctx, canvas.width, canvas.height);
+
+        // Update person list to show scores
+        updatePersonList();
+
+        // Set 15-second timeout
+        viewOnlyTimeout = setTimeout(() => {
+            handleViewOnlyExpire();
+        }, 15000);
+
+        alert('✅ View-only access granted for 15 seconds!');
+    } else {
+        alert('❌ Incorrect password!');
+    }
+}
+
+// Handle view-only expiration
+function handleViewOnlyExpire() {
+    sessionStorage.removeItem('viewOnly');
+    sessionStorage.removeItem('viewOnlyTime');
+
+    // Show the View Once button again
+    const viewOnceButton = document.getElementById('viewOnceButton');
+    if (viewOnceButton) {
+        viewOnceButton.classList.remove('hidden');
+    }
+
+    // Redraw chart to hide pfps
+    const canvas = document.getElementById('burnChart');
+    const ctx = canvas.getContext('2d');
+    drawChart(ctx, canvas.width, canvas.height);
+
+    // Update person list to hide scores
+    updatePersonList();
+
+    alert('⏰ View-only session expired. Click "View Once" to view again.');
 }
 
 // Handle login button click
@@ -396,6 +509,21 @@ document.addEventListener('DOMContentLoaded', function() {
         loginButton.addEventListener('click', function() {
             window.location.href = 'login.html';
         });
+    }
+
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', handleLogout);
+    }
+
+    const viewOnceButton = document.getElementById('viewOnceButton');
+    if (viewOnceButton) {
+        viewOnceButton.addEventListener('click', handleViewOnce);
+    }
+
+    const editProfileButton = document.getElementById('editProfileButton');
+    if (editProfileButton) {
+        editProfileButton.addEventListener('click', openEditProfileModal);
     }
 
     // Check auth on page load
@@ -433,13 +561,13 @@ async function addPerson() {
         return;
     }
 
-    if (isNaN(foodScore) || foodScore < -50 || foodScore > 50) {
-        alert('Food score must be between -50 and 50!');
+    if (isNaN(foodScore) || foodScore < 0 || foodScore > 100) {
+        alert('Food score must be between 0 and 100!');
         return;
     }
 
-    if (isNaN(character) || character < -50 || character > 50) {
-        alert('Character must be between -50 and 50!');
+    if (isNaN(character) || character < 0 || character > 100) {
+        alert('Character must be between 0 and 100!');
         return;
     }
 
@@ -511,9 +639,19 @@ function updatePersonList() {
     const personList = document.getElementById('personList');
     personList.innerHTML = '';
 
+    // Check if user is logged in or in view-only mode
+    const isLoggedIn = sessionStorage.getItem('authenticated');
+    const isViewOnly = sessionStorage.getItem('viewOnly');
+
     people.forEach((person, index) => {
         const card = document.createElement('div');
         card.className = 'person-card';
+
+        // Make cards clickable for admins only (not view-only)
+        if (isLoggedIn) {
+            card.classList.add('clickable');
+            card.onclick = () => openEditScoreModal(index);
+        }
 
         const pfp = document.createElement('img');
         pfp.className = 'person-pfp';
@@ -532,13 +670,16 @@ function updatePersonList() {
         handleDiv.className = 'person-handle';
         handleDiv.textContent = person.handle;
 
-        const scoreDiv = document.createElement('div');
-        scoreDiv.className = 'person-score';
-        const scoreClass = person.socialScore >= 0 ? 'score-positive' : 'score-negative';
-        scoreDiv.innerHTML = `Social Score: <span class="${scoreClass}">${person.socialScore}</span>`;
+        // Only show score if logged in or view-only
+        if (isLoggedIn || isViewOnly) {
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'person-score';
+            const scoreClass = person.socialScore >= 0 ? 'score-positive' : 'score-negative';
+            scoreDiv.innerHTML = `Score: <span class="${scoreClass}">${person.socialScore}</span>`;
+            info.appendChild(scoreDiv);
+        }
 
         info.appendChild(handleDiv);
-        info.appendChild(scoreDiv);
 
         card.appendChild(pfp);
         card.appendChild(info);
@@ -546,6 +687,258 @@ function updatePersonList() {
         personList.appendChild(card);
     });
 }
+
+// Edit score modal functions
+let currentEditingIndex = null;
+
+function openEditScoreModal(index) {
+    const isLoggedIn = sessionStorage.getItem('authenticated');
+    if (!isLoggedIn) return;
+
+    currentEditingIndex = index;
+    const person = people[index];
+
+    document.getElementById('editHandle').value = person.handle;
+    document.getElementById('editFoodScore').value = person.foodScore;
+    document.getElementById('editCharacterScore').value = person.character;
+
+    document.getElementById('editScoreModal').style.display = 'block';
+}
+
+function closeEditScoreModal() {
+    document.getElementById('editScoreModal').style.display = 'none';
+    currentEditingIndex = null;
+}
+
+async function saveEditedEntry() {
+    if (currentEditingIndex === null) return;
+
+    const person = people[currentEditingIndex];
+    const newFoodScore = parseInt(document.getElementById('editFoodScore').value);
+    const newCharacterScore = parseInt(document.getElementById('editCharacterScore').value);
+
+    // Validation
+    if (isNaN(newFoodScore) || newFoodScore < 0 || newFoodScore > 100) {
+        alert('Food score must be between 0 and 100!');
+        return;
+    }
+
+    if (isNaN(newCharacterScore) || newCharacterScore < 0 || newCharacterScore > 100) {
+        alert('Character score must be between 0 and 100!');
+        return;
+    }
+
+    // Update person
+    person.foodScore = newFoodScore;
+    person.character = newCharacterScore;
+    person.socialScore = calculateSocialScore(newFoodScore, newCharacterScore);
+
+    // Update in Firestore
+    try {
+        await window.db.collection('people').doc(person.id).update({
+            foodScore: person.foodScore,
+            character: person.character,
+            socialScore: person.socialScore
+        });
+
+        // Redraw chart
+        const canvas = document.getElementById('burnChart');
+        const ctx = canvas.getContext('2d');
+        drawChart(ctx, canvas.width, canvas.height);
+
+        // Update person list
+        updatePersonList();
+
+        closeEditScoreModal();
+        console.log('Entry updated successfully');
+    } catch (error) {
+        console.error('Error updating entry:', error);
+        alert('Failed to update entry. Please try again.');
+    }
+}
+
+async function deleteEntry() {
+    if (currentEditingIndex === null) return;
+
+    if (!confirm('Are you sure you want to delete this entry?')) {
+        return;
+    }
+
+    const person = people[currentEditingIndex];
+
+    // Delete from Firestore
+    try {
+        await window.db.collection('people').doc(person.id).delete();
+
+        // Remove from local array
+        people.splice(currentEditingIndex, 1);
+
+        // Redraw chart
+        const canvas = document.getElementById('burnChart');
+        const ctx = canvas.getContext('2d');
+        drawChart(ctx, canvas.width, canvas.height);
+
+        // Update person list
+        updatePersonList();
+
+        closeEditScoreModal();
+        console.log('Entry deleted successfully');
+    } catch (error) {
+        console.error('Error deleting entry:', error);
+        alert('Failed to delete entry. Please try again.');
+    }
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const editScoreModal = document.getElementById('editScoreModal');
+    const editProfileModal = document.getElementById('editProfileModal');
+
+    if (event.target === editScoreModal) {
+        closeEditScoreModal();
+    }
+    if (event.target === editProfileModal) {
+        closeEditProfileModal();
+    }
+});
+
+// Edit Profile Modal Functions
+function openEditProfileModal() {
+    const userId = sessionStorage.getItem('userId');
+    if (!userId) return;
+
+    // Load board members from localStorage
+    const boardMembers = JSON.parse(localStorage.getItem('boardMembers') || '[]');
+    const member = boardMembers.find(m => m.id === userId);
+
+    if (!member) return;
+
+    // Populate form
+    document.getElementById('editProfileName').value = member.name;
+    document.getElementById('editProfileRole').value = member.role;
+    document.getElementById('editProfileEmoji').value = member.emoji;
+    document.getElementById('editProfilePassword').value = member.password;
+
+    // Show preview
+    const previewEmoji = document.getElementById('profilePreviewEmoji');
+    const previewImage = document.getElementById('profilePreviewImage');
+
+    if (member.imageUrl) {
+        previewImage.src = member.imageUrl;
+        previewImage.style.display = 'block';
+        previewEmoji.style.display = 'none';
+    } else {
+        previewEmoji.textContent = member.emoji;
+        previewEmoji.style.display = 'block';
+        previewImage.style.display = 'none';
+    }
+
+    document.getElementById('editProfileModal').style.display = 'block';
+}
+
+function closeEditProfileModal() {
+    document.getElementById('editProfileModal').style.display = 'none';
+}
+
+async function saveEditedProfile() {
+    const userId = sessionStorage.getItem('userId');
+    if (!userId) return;
+
+    const newName = document.getElementById('editProfileName').value;
+    const newRole = document.getElementById('editProfileRole').value;
+    const newEmoji = document.getElementById('editProfileEmoji').value || '🐭';
+    const newPassword = document.getElementById('editProfilePassword').value;
+
+    if (!newName || !newRole || !newPassword) {
+        alert('Please fill in all required fields!');
+        return;
+    }
+
+    // Load board members
+    const boardMembers = JSON.parse(localStorage.getItem('boardMembers') || '[]');
+    const memberIndex = boardMembers.findIndex(m => m.id === userId);
+
+    if (memberIndex === -1) return;
+
+    // Update member data
+    boardMembers[memberIndex].name = newName;
+    boardMembers[memberIndex].role = newRole;
+    boardMembers[memberIndex].emoji = newEmoji;
+    boardMembers[memberIndex].password = newPassword;
+
+    // Handle profile picture upload
+    const fileInput = document.getElementById('editProfilePic');
+    if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            boardMembers[memberIndex].imageUrl = e.target.result;
+
+            // Save to localStorage
+            localStorage.setItem('boardMembers', JSON.stringify(boardMembers));
+
+            // Update session storage
+            sessionStorage.setItem('username', newName);
+            sessionStorage.setItem('userRole', newRole);
+            sessionStorage.setItem('userEmoji', e.target.result);
+
+            // Update UI
+            updateUserProfileDisplay();
+            closeEditProfileModal();
+            alert('✅ Profile updated successfully!');
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        // Save without new image
+        localStorage.setItem('boardMembers', JSON.stringify(boardMembers));
+
+        // Update session storage
+        sessionStorage.setItem('username', newName);
+        sessionStorage.setItem('userRole', newRole);
+        sessionStorage.setItem('userEmoji', boardMembers[memberIndex].imageUrl || newEmoji);
+
+        // Update UI
+        updateUserProfileDisplay();
+        closeEditProfileModal();
+        alert('✅ Profile updated successfully!');
+    }
+}
+
+function updateUserProfileDisplay() {
+    const userName = sessionStorage.getItem('username');
+    const userEmoji = sessionStorage.getItem('userEmoji');
+
+    if (userName && userEmoji) {
+        document.getElementById('userName').textContent = userName;
+
+        const emojiElement = document.getElementById('userEmoji');
+        if (userEmoji.startsWith('data:')) {
+            emojiElement.innerHTML = `<img src="${userEmoji}" style="width: 1.5em; height: 1.5em; border-radius: 50%; object-fit: cover;">`;
+        } else {
+            emojiElement.textContent = userEmoji;
+        }
+    }
+}
+
+// Profile picture preview in edit modal
+document.addEventListener('DOMContentLoaded', function() {
+    const profilePicInput = document.getElementById('editProfilePic');
+    if (profilePicInput) {
+        profilePicInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const previewImage = document.getElementById('profilePreviewImage');
+                    const previewEmoji = document.getElementById('profilePreviewEmoji');
+                    previewImage.src = event.target.result;
+                    previewImage.style.display = 'block';
+                    previewEmoji.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
 
 // Event listeners
 document.getElementById('addPerson').addEventListener('click', addPerson);
@@ -579,6 +972,97 @@ window.addEventListener('resize', () => {
     drawChart(ctx, canvas.width, canvas.height);
 });
 
+// Screenshot and screen recording protection
+function initScreenProtection() {
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        return false;
+    });
+
+    // Disable keyboard shortcuts for screenshots
+    document.addEventListener('keydown', (e) => {
+        // Prevent Command+Shift+3/4/5 (Mac screenshots)
+        // Prevent Print Screen (Windows)
+        // Prevent Command+Shift+S (some screenshot tools)
+        if (
+            (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)) ||
+            e.key === 'PrintScreen' ||
+            (e.metaKey && e.shiftKey && e.key === 's') ||
+            (e.ctrlKey && e.key === 'p')
+        ) {
+            e.preventDefault();
+            alert('🚫 Screenshots are disabled');
+            return false;
+        }
+    });
+
+    // Detect when user leaves/switches tab (may be using screen recording)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            console.log('⚠️ User left the page - possible screen recording');
+        }
+    });
+
+    // Add watermark to make screenshots less useful
+    const watermark = document.createElement('div');
+    watermark.id = 'watermark';
+    watermark.style.position = 'fixed';
+    watermark.style.top = '50%';
+    watermark.style.left = '50%';
+    watermark.style.transform = 'translate(-50%, -50%)';
+    watermark.style.fontSize = '8em';
+    watermark.style.opacity = '0.03';
+    watermark.style.pointerEvents = 'none';
+    watermark.style.userSelect = 'none';
+    watermark.style.zIndex = '9999';
+    watermark.style.color = '#FF1493';
+    watermark.style.fontWeight = 'bold';
+    watermark.textContent = 'S.A.C CONFIDENTIAL';
+    document.body.appendChild(watermark);
+
+    // Detect devtools (often used with screenshot extensions)
+    const detectDevTools = () => {
+        const threshold = 160;
+        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+
+        if (widthThreshold || heightThreshold) {
+            console.log('⚠️ DevTools may be open');
+        }
+    };
+
+    setInterval(detectDevTools, 1000);
+
+    // CSS-based protection (add to body)
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+    document.body.style.mozUserSelect = 'none';
+    document.body.style.msUserSelect = 'none';
+
+    // Mobile-specific: Disable long-press screenshot
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // Blur content when window loses focus (anti screen recording)
+    window.addEventListener('blur', () => {
+        document.body.style.filter = 'blur(10px)';
+    });
+
+    window.addEventListener('focus', () => {
+        document.body.style.filter = 'none';
+    });
+}
+
 // Initialize on load
 window.addEventListener('load', async () => {
     console.log('Page loaded, initializing chart...');
@@ -587,6 +1071,10 @@ window.addEventListener('load', async () => {
         console.log('Chart initialized successfully');
         await loadPeople();
         console.log('People loaded successfully');
+
+        // Initialize screen protection
+        initScreenProtection();
+        console.log('Screen protection enabled');
     } catch (error) {
         console.error('Error during initialization:', error);
     }
