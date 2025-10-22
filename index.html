@@ -103,6 +103,21 @@
         </div>
     </div>
 
+    <!-- View Once Password Modal -->
+    <div id="viewOnceModal" class="edit-score-modal">
+        <div class="edit-score-modal-content">
+            <h2>🔒 View Once</h2>
+            <p style="text-align: center; color: #9B59B6; margin-bottom: 20px;">Enter the view-only password to see the chart for 15 seconds</p>
+            <div class="edit-score-form">
+                <input type="password" id="viewOncePassword" placeholder="Enter password" style="text-align: center; font-size: 1.1em;" onkeypress="if(event.key === 'Enter') submitViewOncePassword()">
+                <div class="edit-score-buttons">
+                    <button class="cancel-edit-btn" onclick="closeViewOnceModal()">Cancel</button>
+                    <button class="save-edit-btn" onclick="submitViewOncePassword()">View</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="edit-score-modal">
         <div class="edit-score-modal-content">

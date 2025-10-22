@@ -448,9 +448,26 @@ let viewOnlyTimeout = null;
 
 // Handle view-only access
 function handleViewOnce() {
-    const password = prompt('Enter view-only password:');
+    // Show the custom modal
+    document.getElementById('viewOnceModal').style.display = 'block';
+    // Focus the password input
+    setTimeout(() => {
+        document.getElementById('viewOncePassword').focus();
+    }, 100);
+}
+
+function closeViewOnceModal() {
+    document.getElementById('viewOnceModal').style.display = 'none';
+    document.getElementById('viewOncePassword').value = '';
+}
+
+function submitViewOncePassword() {
+    const password = document.getElementById('viewOncePassword').value;
 
     if (password === VIEW_ONLY_PASSWORD) {
+        // Close modal
+        closeViewOnceModal();
+
         // Set view-only session
         sessionStorage.setItem('viewOnly', 'true');
         sessionStorage.setItem('viewOnlyTime', Date.now().toString());
@@ -477,6 +494,8 @@ function handleViewOnce() {
         alert('✅ View-only access granted for 15 seconds!');
     } else {
         alert('❌ Incorrect password!');
+        document.getElementById('viewOncePassword').value = '';
+        document.getElementById('viewOncePassword').focus();
     }
 }
 
@@ -793,12 +812,16 @@ async function deleteEntry() {
 window.addEventListener('click', function(event) {
     const editScoreModal = document.getElementById('editScoreModal');
     const editProfileModal = document.getElementById('editProfileModal');
+    const viewOnceModal = document.getElementById('viewOnceModal');
 
     if (event.target === editScoreModal) {
         closeEditScoreModal();
     }
     if (event.target === editProfileModal) {
         closeEditProfileModal();
+    }
+    if (event.target === viewOnceModal) {
+        closeViewOnceModal();
     }
 });
 
@@ -985,97 +1008,6 @@ window.addEventListener('resize', () => {
     drawChart(ctx, canvas.width, canvas.height);
 });
 
-// Screenshot and screen recording protection
-function initScreenProtection() {
-    // Disable right-click context menu
-    document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        return false;
-    });
-
-    // Disable keyboard shortcuts for screenshots
-    document.addEventListener('keydown', (e) => {
-        // Prevent Command+Shift+3/4/5 (Mac screenshots)
-        // Prevent Print Screen (Windows)
-        // Prevent Command+Shift+S (some screenshot tools)
-        if (
-            (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)) ||
-            e.key === 'PrintScreen' ||
-            (e.metaKey && e.shiftKey && e.key === 's') ||
-            (e.ctrlKey && e.key === 'p')
-        ) {
-            e.preventDefault();
-            alert('🚫 Screenshots are disabled');
-            return false;
-        }
-    });
-
-    // Detect when user leaves/switches tab (may be using screen recording)
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            console.log('⚠️ User left the page - possible screen recording');
-        }
-    });
-
-    // Add watermark to make screenshots less useful
-    const watermark = document.createElement('div');
-    watermark.id = 'watermark';
-    watermark.style.position = 'fixed';
-    watermark.style.top = '50%';
-    watermark.style.left = '50%';
-    watermark.style.transform = 'translate(-50%, -50%)';
-    watermark.style.fontSize = '8em';
-    watermark.style.opacity = '0.03';
-    watermark.style.pointerEvents = 'none';
-    watermark.style.userSelect = 'none';
-    watermark.style.zIndex = '9999';
-    watermark.style.color = '#FF1493';
-    watermark.style.fontWeight = 'bold';
-    watermark.textContent = 'S.A.C CONFIDENTIAL';
-    document.body.appendChild(watermark);
-
-    // Detect devtools (often used with screenshot extensions)
-    const detectDevTools = () => {
-        const threshold = 160;
-        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-
-        if (widthThreshold || heightThreshold) {
-            console.log('⚠️ DevTools may be open');
-        }
-    };
-
-    setInterval(detectDevTools, 1000);
-
-    // CSS-based protection (add to body)
-    document.body.style.userSelect = 'none';
-    document.body.style.webkitUserSelect = 'none';
-    document.body.style.mozUserSelect = 'none';
-    document.body.style.msUserSelect = 'none';
-
-    // Mobile-specific: Disable long-press screenshot
-    document.addEventListener('touchstart', (e) => {
-        if (e.touches.length > 1) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    document.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 1) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    // Blur content when window loses focus (anti screen recording)
-    window.addEventListener('blur', () => {
-        document.body.style.filter = 'blur(10px)';
-    });
-
-    window.addEventListener('focus', () => {
-        document.body.style.filter = 'none';
-    });
-}
-
 // Initialize on load
 window.addEventListener('load', async () => {
     console.log('Page loaded, initializing chart...');
@@ -1084,10 +1016,6 @@ window.addEventListener('load', async () => {
         console.log('Chart initialized successfully');
         await loadPeople();
         console.log('People loaded successfully');
-
-        // Initialize screen protection
-        initScreenProtection();
-        console.log('Screen protection enabled');
     } catch (error) {
         console.error('Error during initialization:', error);
     }
