@@ -805,13 +805,26 @@ window.addEventListener('click', function(event) {
 // Edit Profile Modal Functions
 function openEditProfileModal() {
     const userId = sessionStorage.getItem('userId');
-    if (!userId) return;
+    console.log('Opening edit profile modal, userId:', userId);
+
+    if (!userId) {
+        console.error('No userId found in sessionStorage');
+        alert('Error: No user ID found. Please log in again.');
+        return;
+    }
 
     // Load board members from localStorage
     const boardMembers = JSON.parse(localStorage.getItem('boardMembers') || '[]');
-    const member = boardMembers.find(m => m.id === userId);
+    console.log('Board members from localStorage:', boardMembers);
 
-    if (!member) return;
+    const member = boardMembers.find(m => m.id === userId);
+    console.log('Found member:', member);
+
+    if (!member) {
+        console.error('Member not found for userId:', userId);
+        alert('Error: Profile data not found. Please log in again.');
+        return;
+    }
 
     // Populate form
     document.getElementById('editProfileName').value = member.name;

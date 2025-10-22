@@ -360,6 +360,12 @@
 
         let boardMembers = loadBoardMembers();
 
+        // Save board members to localStorage on load (if not already saved)
+        if (!localStorage.getItem('boardMembers')) {
+            localStorage.setItem('boardMembers', JSON.stringify(boardMembers));
+            console.log('Initialized boardMembers in localStorage');
+        }
+
         function saveBoardMembers() {
             localStorage.setItem('boardMembers', JSON.stringify(boardMembers));
         }
