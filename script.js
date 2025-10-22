@@ -443,7 +443,7 @@ function handleLogout() {
 }
 
 // View-only mode variables
-const VIEW_ONLY_PASSWORD = 'viewonly123';
+const VIEW_ONLY_PASSWORD = 'onlyratz';
 let viewOnlyTimeout = null;
 
 // Handle view-only access
